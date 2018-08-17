@@ -5,15 +5,6 @@
 #include "header.h"
 #include "envLink.h"
 
-typedef struct env_info{
-	float temperature;
-	float humidity;
-	float illumination;
-	int x;
-	int y;
-	int z;
-	char insert_time[20];
-} env_info; 
 
 typedef struct env_info_limit{
 	float temperatureMAX;
