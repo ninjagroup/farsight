@@ -11,19 +11,22 @@ typedef struct env_info_limit{
 	float temperatureMIN;
 	float humidityMAX;
 	float humidityMIN;
-	float illuminationMAX;
-	float illuminationMIN;
+	float illusionMAX;
+	float illusionMIN;
 } env_info_limit;
-//env_info header 
-envLink envHeader;
+
+bool env_insert(env_info envInfo);
 //insert env_info suc = true fail = false 
-bool env_insert(env_info env_info);
-//select env_info 
-env_info * env_select();
+bool env_insert_msg(msgtype msg);
+//select env_info select data push into msg queue
+void env_select();
 
 //insert env_info_limit suc = true fail = false  
-bool env_limit_insert(env_info_limit env_info_limit);
-//select env_info_limit 
+bool env_limit_insert(msgtype);
+//select when startup
 env_info_limit env_limit_select();
-
+//select env_info_limit push into msgqueue
+void env_limit_select_msg();
+//env choice 
+void env_set(msgtype);
 #endif
