@@ -30,7 +30,7 @@ void * m0_func(void * args)
 		getTime(time_str);
 		sprintf(msg.msgcont,"%f#%f#%f#%s",temperature,illusion,humidity,time_str);
 		//normal insert into link if link size > 10 insert into sqlite and shm 
-		if(insertLink(msg) > 10)
+		if(insertLink(&envHeader,msg) > 10)
 		{
 			//first insertshm
 			insertshm();
@@ -107,6 +107,7 @@ void * client_func(void * args)
 void * sqlite_func(void * args)
 {
 	printf("this is sqlite\n");
+	env_info envInfo;
 	while(1)
 	{
 		pthread_mutex_lock(&sqlite_mutex);
@@ -117,7 +118,8 @@ void * sqlite_func(void * args)
 
 		if(linkCount(&envHeader))
 		{
-			env_insert(popLink(&envHeader));	
+			popLink(&envHeader,&envInfo);
+			env_insert(envInfo);	
 		}else{
 			sqlite_flag = 0;
 		}

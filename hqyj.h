@@ -25,12 +25,12 @@ pthread_mutex_t led_mutex,pwm_mutex,fan_mutex;
 pthread_mutex_t sqlite_mutex;
 //flags led,pwm,fan 
 int led_flag,pwm_flag,fan_flag;
+//env_info header 
+envLink envHeader;
 //flags sqlite 
 int sqlite_flag;
 //msgid ,shmid
 int msgid_send,msgid_recv,shmid;
-//env_info header 
-envLink envHeader;
 //ftok 
 key_t msg_send,msg_recv,shmkey;
 //max min 

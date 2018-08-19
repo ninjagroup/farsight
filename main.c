@@ -93,6 +93,12 @@ int main(int argc, const char *argv[])
 	}
 	//init link 
 	initLink(&envHeader);
+	msgtype msg; 
+	msg.msgtype = 1001;
+	msg.msgtype = 4;
+	strcpy(msg.msgcont,"#33.2#13.11#18.33#hello my world!");
+	printf("%d\n",insertLink(&envHeader,msg));
+
 	//create thread 
 	if(pthread_create(&pthread_m0,NULL,m0_func,NULL) < 0)
 	{
