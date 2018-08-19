@@ -11,6 +11,6 @@ void close_led();
 void open_pwm();
 void close_pwm();
 
-void insertshm();
+void insertshm(int,msgtype);
 
 #endif 

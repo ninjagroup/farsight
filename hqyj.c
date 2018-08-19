@@ -33,7 +33,7 @@ void * m0_func(void * args)
 		if(insertLink(&envHeader,msg) > 10)
 		{
 			//first insertshm
-			insertshm();
+			insertshm(shmkey,msg);
 			pthread_mutex_lock(&sqlite_mutex);
 			sqlite_flag = 1;
 			pthread_cond_signal(&pthread_sqlite_cond);

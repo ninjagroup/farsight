@@ -27,7 +27,7 @@ int main(int argc, const char *argv[])
 		}
 	}
 
-	if((shmid = shmget(shmkey,sizeof(msgtype) * 10,IPC_CREAT|IPC_EXCL|0777) < 0))
+	if((shmid = shmget(shmkey,sizeof(msgtype),IPC_CREAT|IPC_EXCL|0777) < 0))
 	{
 		if(errno = EEXIST)
 		{
