@@ -24,8 +24,21 @@ void * m0_func(void * args)
 	int t_flag = 0;
 	int i_flag = 0;
 	int h_flag = 0;
+	//make msg  temperature#illusion#humidity#changetime 
 	while(1)
 	{
+		getTime(time_str);
+		sprintf(msg.msgcont,"%f#%f#%f#%s",temperature,illusion,humidity,time_str);
+		//normal insert into link if link size > 10 insert into sqlite and shm 
+		if(insertLink(msg) > 10)
+		{
+			//first insertshm
+			insertshm();
+			pthread_mutex_lock(&sqlite_mutex);
+			sqlite_flag = 1;
+			pthread_cond_signal(&pthread_sqlite_cond);
+			pthread_mutex_unlock(&sqlite_mutex);
+		}
 		//read 
 		
 		temperature = read_temperature();
@@ -52,20 +65,6 @@ void * m0_func(void * args)
 			pthread_cond_signal(&pthread_pwm_cond);
 			pthread_mutex_unlock(&pwm_mutex);
 		}
-		//make msg  temperature#illusion#humidity#changetime 
-		getTime(time_str);
-		sprintf(msg.msgcont,"%f#%f#%f#%s",temperature,illusion,humidity,time_str);
-		printf("the msg:%s\n",msg.msgcont);
-		//normal insert into link if link size > 10 insert into sqlite and shm 
-		if(insertLink(msg) > 10)
-		{
-			//first insertshm
-			insertshm();
-			pthread_mutex_lock(&sqlite_mutex);
-			sqlite_flag = 1;
-			pthread_cond_signal(&pthread_sqlite_cond);
-			pthread_mutex_unlock(&sqlite_mutex);
-		}
 		//sleep
 		sleep(1);		
 	}
@@ -83,14 +82,18 @@ void * client_func(void * args)
 		{
 			perror("fail to client_func msgrcv!");
 		}else{
-			switch(msg.type)
+			switch(msg.msgtype)
 			{
-				case 'C':
+				case 1002:
 					zigbee_set(msg);
 					break;
-				case 'E':
+				case 1001:
+					env_set(msg);
+					break;
+				case 1004:
 					env_set(msg);
 					break; 
+
 
 			}
 
