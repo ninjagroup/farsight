@@ -30,13 +30,14 @@
 *.i*86
 *.x86_64
 *.hex
+main
 
 # Debug files
 *.dSYM/
 *.su
 *.idb
 *.pdb
-
+*.swp
 # Kernel Module Compile Results
 *.mod*
 *.cmd
