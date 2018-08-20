@@ -5,8 +5,12 @@
 #include "header.h"
 #include "envLink.h"
 
+#define DATABASE "my.db"
+#define N 128
 
+extern env_Link *envHeader;
 typedef struct env_info_limit{
+	int 	id;
 	float temperatureMAX;
 	float temperatureMIN;
 	float humidityMAX;
@@ -14,6 +18,8 @@ typedef struct env_info_limit{
 	float illusionMAX;
 	float illusionMIN;
 } env_info_limit;
+
+void env_init();
 
 bool env_insert(env_info envInfo);
 //insert env_info suc = true fail = false 
@@ -29,4 +35,6 @@ env_info_limit env_limit_select();
 void env_limit_select_msg();
 //env choice 
 void env_set(msgtype);
+
+int history_callback(void *arg,int f_num,char ** f_value,char ** f_name);
 #endif
