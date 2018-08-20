@@ -37,6 +37,8 @@ key_t msg_send,msg_recv,shmkey;
 env_info_limit env_limit;
 //ledtype 
 int ledtype;
+//init db
+sqlite3 *db;
 //init peripheral
 void do_init(void);
 //pthread 

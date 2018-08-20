@@ -1,11 +1,11 @@
 OBJS = $(wildcard *.c)
 RMFILE = $(OBJS:%.c=%.o)
-FLAGS = -lpthread -o
+FLAGS = -lpthread -lsqlite3 -o
 GCC=gcc 
 main:$(OBJS)
-	$(GCC) $(OBJS)  $(FLAGS) $@ 
+	$(GCC) -g $(OBJS)  $(FLAGS) $@ 
 
 .PHONY:clean
 
 clean:
-	$(RM) main a.out $(RMFILE)
+	$(RM)  main a.out $(RMFILE)

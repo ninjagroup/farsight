@@ -5,12 +5,10 @@
 #include "header.h"
 #include "envLink.h"
 
-#define DATABASE "my.db"
+#define DATABASE "ninja.db"
 #define N 128
 
-extern env_Link *envHeader;
 typedef struct env_info_limit{
-	int 	id;
 	float temperatureMAX;
 	float temperatureMIN;
 	float humidityMAX;
@@ -19,22 +17,21 @@ typedef struct env_info_limit{
 	float illusionMIN;
 } env_info_limit;
 
-void env_init();
+void env_init(sqlite3 **db);
 
-bool env_insert(env_info envInfo);
+bool env_insert(sqlite3 *db,env_info envInfo);
 //insert env_info suc = true fail = false 
-bool env_insert_msg(msgtype msg);
+bool env_insert_msg(sqlite3 *db,msgtype msg);
 //select env_info select data push into msg queue
-void env_select();
+void env_select(sqlite3 *db);
 
 //insert env_info_limit suc = true fail = false  
-bool env_limit_insert(msgtype);
+bool env_limit_insert(sqlite3 *,msgtype);
 //select when startup
-env_info_limit env_limit_select();
+env_info_limit env_limit_select(sqlite3 *db);
 //select env_info_limit push into msgqueue
-void env_limit_select_msg();
+void env_limit_select_msg(sqlite3 *db);
 //env choice 
-void env_set(msgtype);
+void env_set(sqlite3 *,msgtype);
 
-int history_callback(void *arg,int f_num,char ** f_value,char ** f_name);
 #endif

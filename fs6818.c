@@ -19,6 +19,7 @@ void init_led()
 
 void open_led(int color)
 {
+	/*
 	if(color == 1)
 	{
 		LED_RED_OUT |= (1<<28);
@@ -30,13 +31,17 @@ void open_led(int color)
 	else{
 		LED_BLUE_OUT |= (1<<12);
 	}
+	*/
+	printf("alarm!!!!\n");
 }
 
 void close_led()
 {
+	/*
 	LED_RED_OUT &= ~(1<<28);
 	LED_GREEN_OUT &= ~(1<<13);
 	LED_BLUE_OUT &= ~(1<12);
+	*/
 }
 
 void open_pwm()

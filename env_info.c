@@ -1,148 +1,214 @@
 #include "env_info.h"
 
-sqlite3 *db;
 
 //
 //
-void env_init()
+void env_init(sqlite3 **db)
 {
 	char *errmsg;
+
+	if(sqlite3_open(DATABASE,db) != SQLITE_OK)
+	{
+		printf("error : %s\n", sqlite3_errmsg(*db));
+		exit(-1);
+	}
+
+	if(sqlite3_exec(*db,"create table env(id integer primary key autoincrement,temperature real,humidity real,illusion real,x integer \
+		,y integer,z integer,insertdate text)",NULL,NULL,&errmsg) != SQLITE_OK)
+	{
+		printf("%s\n", errmsg);
+	}
+	else
+	{
+		printf("The env has created successfully\n");
+	}
+
+	if(sqlite3_exec(*db,"create table envlimit(temperatureMAX real,temperatureMIN real,\
+		humidityMAX real,humidityMIN real,illusionMAX real,illusionMIN real)",NULL,NULL,&errmsg) != SQLITE_OK)
+	{
+		printf("%s\n", errmsg);
+	}
+	else
+	{
+		printf("The envlimit has created successfully\n");
+		if(sqlite3_exec(*db,"insert into envlimit(temperatureMAX,temperatureMIN,\
+			humidityMAX,humidityMIN,illusionMAX,illusionMIN) values(40,10,40,10,40,10)",NULL,NULL,&errmsg) != SQLITE_OK)
+		{
+			printf("%s\n",errmsg);
+		}
+	}
+}
+
+int callback_limit(void *arg,int ncol,char **text,char **name)
+{
+	int i = 0;
+	env_info_limit *env_limit = ((env_info_limit *)arg);
+	env_limit->temperatureMAX = atof((text[i]));
+	env_limit->temperatureMIN = atof((text[++i]));
+	env_limit->humidityMAX = atof((text[++i]));
+	env_limit->humidityMIN = atof((text[++i]));
+	env_limit->illusionMAX = atof((text[++i]));
+	env_limit->illusionMIN = atof((text[++i]));
+	return 1;
+}
+
+
+env_info_limit env_limit_select(sqlite3 *db)
+{
+	char *errmsg;
+	char sql[100] = "select * from envlimit limit 1";
+	env_info_limit env_limit;
+/*
+
 	if(sqlite3_open(DATABASE,&db) != SQLITE_OK)
 	{
 		printf("error : %s\n", sqlite3_errmsg(db));
 		exit(-1);
 	}
-
-	if(sqlite3_exec(db,"create table envtable(humiture int)",NULL,NULL,&errmsg) != SQLITE_OK)
+*/
+	if(sqlite3_exec(db,sql,callback_limit,&env_limit,&errmsg) != SQLITE_OK)
 	{
-		printf("%s\n", errmsg);
+		printf("%s\n",errmsg);
 	}
-	else
+	else 
 	{
-		printf("The table has created successfully\n");
+		printf("someone selecting from envlimit!\n");
 	}
-
-	if(sqlite3_exec(db,"create table boundtable(upvalue int,downvalue int)",NULL,NULL,&errmsg) != SQLITE_OK)
-	{
-		printf("%s\n", errmsg);
-	}
-	else
-	{
-		printf("The table has created successfully\n");
-	}
+//	sqlite3_close(db);
+	return env_limit;
 }
 
-env_info_limit env_limit_select()
-{
-	env_info_limit limit_info;
-	limit_info.temperatureMAX = 10;
-	limit_info.temperatureMIN = 5;
-	limit_info.illusionMAX = 10;
-	limit_info.illusionMIN = 5;
-	limit_info.humidityMAX = 10;
-	limit_info.humidityMIN = 5;
-	return limit_info;
-}
-
-void env_select()
+void env_select(sqlite3 *db)
 {
 	char sqlstr[128],*errmsg;
 
-	strcpy(sqlstr,"select * from envtable limit 15");
-
-	if(sqlite3_exec(db,sqlstr,history_callback,/*传参*/,&errmsg) != SQLITE_OK)
-	{
-		printf("error : %s\n,errmsg");
-	}
+	strcpy(sqlstr,"select * from env limit 15");
+	
 	//msgcont pid 
 	//msg queue msgtype pid cont temperature#humid#illusion 
 	
 }
 
-int history_callback(void *arg,int f_num,char ** f_value,char ** f_name)
+
+bool env_insert(sqlite3 *db,env_info envInfo)
 {
-	sprintf(msg.data, "%s : %s", f_value[1], f_value[2]);
-	//发送语句
-	
-	return 0;
+	char sql[128];
+	char *errmsg;
+	/*
+	if(sqlite3_open(DATABASE,&db) != SQLITE_OK)
+	{
+		printf("error : %s\n", sqlite3_errmsg(db));
+		return false;
+	}
+	*/
+	sprintf(sql, "insert into env(temperature,illusion,humidity,insertdate) values(%f,%f,%f,'%s')",envInfo.temperature,\
+			envInfo.illusion,envInfo.humidity,envInfo.insert_time);
+	if(sqlite3_exec(db, sql, NULL, NULL, &errmsg) != SQLITE_OK)
+	{
+		printf("%s\n", errmsg);
+		return false;
+	}
+	else 
+	{
+		printf("insert into env\n");
+	}
+//	sqlite3_close(db);
+	return true;
 }
 
-bool env_insert(env_info envInfo)
+bool env_insert_msg(sqlite3 *db,msgtype msg)
 {
-	char sql[N] = {};
-	char *errmsg;
-	sprintf(sql, "insert into envtable values(%d)", env_info);
+//msgcont  temperature#illusion#humidity#changetime
+	float temperature;
+	float illusion;
+	float humidity;
+	char insertdate[20];
+	char sql[100];
+	char * errmsg;
 
+	sscanf(msg.msgcont,"%f#%f#%f#%s",&temperature,&illusion,&humidity,insertdate);
+	sprintf(sql,"insert into env(temperature,illusion,humidity,insertdate) values(%f,%f,%f,%s)",\
+			temperature,illusion,humidity,insertdate);
+
+/*
+	if(sqlite3_open(DATABASE,&db) != SQLITE_OK)
+	{
+		printf("error : %s\n", sqlite3_errmsg(db));
+		return false;
+	}
+*/
 	if(sqlite3_exec(db, sql, NULL, NULL, &errmsg) != SQLITE_OK)
 	{
 		printf("%s\n", errmsg);
 	}
 	else 
 	{
-		printf("The data has inserted successfully\n");
+		printf("insert into env msg mode\n");
 	}
+
+
 	return true;
 }
 
-bool env_insert_msg(msgtype msg)
+bool env_limit_insert(sqlite3 *db,msgtype msg)
 {
-	return true;
-}
-
-//修改上下限(修改之前先删除后增加)
-bool env_limit_insert(msgtype msg)
-{
-	char sql[N] = {};
+	char sql[100];
 	char *errmsg;
-	sprintf(sql,"delete from boundtable where id = %d",env_info_limit.id);
-	if(sqlite3_exec(db,sql,NULL,NULL,&errmsg) != SQLITE_OK)
-	{
-		printf("%s\n",errmsg);
-	}
-
-	//默认id 为1
-	sprintf(sql,"insert into boundtable values(%d,%f,%f,%f,%f,%f,%f)",env_info_limit.id,env_info_limit.humidityMAX,env_info_limit.humidityMIN,env_info_limit.illusionMAX,env_info_limit.illusionMIN);
-  	
-	if(sqlite3_exec(db, sql, NULL, NULL, &errmsg) != SQLITE_OK)
-	{
-		printf("%s\n", errmsg);
-	}
-	else 
-	{
-		printf("The data has inserted successfully\n");
-	}
+	float temMax;
+	float temMin;
+	float huMax;
+	float huMin;
+	float illMax;
+	float illMin;
 	
+	if(sqlite3_open(DATABASE,&db) != SQLITE_OK)
+	{
+		printf("error : %s\n", sqlite3_errmsg(db));
+		return false;
+	}
 	//msgcont temMax#temMin#huMax#huMin#illMax#illuMin 
+	sscanf(msg.msgcont,"%f#%f#%f#%f#%f#%f",&temMax,&temMin,&huMax,\
+			&huMin,&illMax,&illMin);
+	sprintf(sql,"insert into envlimit(temperaturMAX,temperatureMIN,\
+		humidityMAX,humidityMIN,illusionMAX,illusionMIN) values(\
+			%f,%f,%f,%f,%f,%f)",temMax,temMin,huMax,huMin,illMax,illMin);
+
+	if(sqlite3_exec(db, sql, NULL, NULL, &errmsg) != SQLITE_OK)
+	{
+		printf("%s\n", errmsg);
+		return false;
+	}
+	else 
+	{
+		printf("insert into env limit msg mode\n");
+	}
+
 	return true; 
 }
 
-void env_limit_select_msg()
+void env_limit_select_msg(sqlite3 *db)
 {
 	//msgcont pid 
 	//msg queue msgtype pid cont temMax#temMin#huMax#huMin#illuMax#illuMin
+	
 
 }
-void env_set(msgtype msg,env_Link *H)
+void env_set(sqlite3 *db,msgtype msg)
 {
-	while(H->next != NULL)
+	if(msg.msgtype == 1001)
 	{
-		if(msg.msgtype == 1001)
+		if(msg.type == 2)
 		{
-			if(msg.type == 2)
-			{
-				env_limit_select_msg();
-			}
-		}else if(msg.msgtype == 1004)
-		{
-			if(msg.type == 1)
-			{
-				env_insert_msg(msg);
-			}else if(msg.type == 2)
-			{
-				env_select();
-			}
+			env_limit_select_msg(db);
 		}
-		H = H->next;
+	}else if(msg.msgtype == 1004)
+	{
+		if(msg.type == 1)
+		{
+			env_insert_msg(db,msg);
+		}else if(msg.type == 2)
+		{
+			env_select(db);
+		}
 	}
-
 }

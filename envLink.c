@@ -3,6 +3,7 @@
 void initLink(envLink *H)
 {
 	H = (envLink *)malloc(sizeof(envLink));
+	H->top = -1;
 	if(H == NULL)
 	{
 		perror("fail to init link!");
@@ -14,7 +15,7 @@ int insertLink(envLink *H,msgtype msg)
 {
 	env_info envInfo; 
 	//msg temperature, illusion,humidity,time_str 
-	sscanf(msg.msgcont,"#%f#%f#%f#%s",&(envInfo.temperature),&(envInfo.illusion)\
+	sscanf(msg.msgcont,"%f#%f#%f#%[^#]#",&(envInfo.temperature),&(envInfo.illusion)\
 			,&(envInfo.humidity),envInfo.insert_time);
 	envInfo.x = 0;
 	envInfo.y = 0;
@@ -25,7 +26,7 @@ int insertLink(envLink *H,msgtype msg)
 	envElement->next = H->next; 
 	H->next = envElement;
 	H->top++;
-	return H->top + 1;
+	return H->top;
 }
 
 int linkCount(envLink *H)
@@ -37,13 +38,13 @@ void popLink(envLink *H,env_info *envInfo)
 {
 	env_info envinfo; 
 	envLink *p;
-	if(H->top != -1)
+	if(H->top > -1)
 	{
 		p = H->next;
 		envinfo = p->envInfo;
 		*envInfo = envinfo;
-		free(p);
 		H->next = H->next->next;
+		free(p);
 		H->top--;
 	}
 }

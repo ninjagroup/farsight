@@ -4,7 +4,9 @@ void do_init()
 {
 	
 	init_zigbee();
-	env_limit = env_limit_select();
+	//init databse 
+	env_init(&db);
+	env_limit = env_limit_select(db);
 	msg_send = ftok("./README.md",'n');
 	msg_recv = ftok("./README.md",'j');
 	shmkey = ftok("./README.md",'a');
@@ -27,10 +29,17 @@ void * m0_func(void * args)
 	//make msg  temperature#illusion#humidity#changetime 
 	while(1)
 	{
+
+
+		//read 
+		temperature = read_temperature();
+		illusion = read_illusion();
+		humidity = read_humidity();
+
 		getTime(time_str);
-		sprintf(msg.msgcont,"%f#%f#%f#%s",temperature,illusion,humidity,time_str);
+		sprintf(msg.msgcont,"%f#%f#%f#%s#",temperature,illusion,humidity,time_str);
 		//normal insert into link if link size > 10 insert into sqlite and shm 
-		if(insertLink(&envHeader,msg) > 10)
+		if(insertLink(&envHeader,msg) > 9)
 		{
 			//first insertshm
 			insertshm(shmkey,msg);
@@ -39,12 +48,7 @@ void * m0_func(void * args)
 			pthread_cond_signal(&pthread_sqlite_cond);
 			pthread_mutex_unlock(&sqlite_mutex);
 		}
-		//read 
 		
-		temperature = read_temperature();
-		illusion = read_illusion();
-		humidity = read_humidity();
-
 		//alam exceed limit 
 		if((t_flag = (temperature > env_limit.temperatureMAX || temperature < env_limit.temperatureMIN)) || \
 				(i_flag = (illusion > env_limit.illusionMAX || illusion < env_limit.illusionMIN)) || \
@@ -76,9 +80,10 @@ void * client_func(void * args)
 	printf("this is client\n");
 	msgtype msg;
 	
+	
 	while(1)
 	{
-		if(msgrcv(msg_send,&msg,sizeof(msgtype),0,0) < 0)
+		if(msgrcv(msgid_send,&msg,sizeof(msgtype),0,0) < 0)
 		{
 			perror("fail to client_func msgrcv!");
 		}else{
@@ -88,10 +93,10 @@ void * client_func(void * args)
 					zigbee_set(msg);
 					break;
 				case 1001:
-					env_set(msg);
+					env_set(db,msg);
 					break;
 				case 1004:
-					env_set(msg);
+					env_set(db,msg);
 					break; 
 
 
@@ -106,7 +111,6 @@ void * client_func(void * args)
 
 void * sqlite_func(void * args)
 {
-	printf("this is sqlite\n");
 	env_info envInfo;
 	while(1)
 	{
@@ -116,10 +120,10 @@ void * sqlite_func(void * args)
 			pthread_cond_wait(&pthread_sqlite_cond,&sqlite_mutex);
 		}
 
-		if(linkCount(&envHeader))
+		if(linkCount(&envHeader) > 1)
 		{
 			popLink(&envHeader,&envInfo);
-			env_insert(envInfo);	
+			env_insert(db,envInfo);	
 		}else{
 			sqlite_flag = 0;
 		}
