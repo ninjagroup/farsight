@@ -23,7 +23,7 @@ bool env_insert(sqlite3 *db,env_info envInfo);
 //insert env_info suc = true fail = false 
 bool env_insert_msg(sqlite3 *db,msgtype msg);
 //select env_info select data push into msg queue
-void env_select(sqlite3 *db);
+void env_select(sqlite3 *db,msgtype msg,int recv_key);
 
 //insert env_info_limit suc = true fail = false  
 bool env_limit_insert(sqlite3 *,msgtype);
@@ -32,6 +32,6 @@ env_info_limit env_limit_select(sqlite3 *db);
 //select env_info_limit push into msgqueue
 void env_limit_select_msg(sqlite3 *db);
 //env choice 
-void env_set(sqlite3 *,msgtype);
+void env_set(sqlite3 *,msgtype,int);
 
 #endif

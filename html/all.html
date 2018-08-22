@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>hello!</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">  
+	<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script>
+		$(function(){
+			$.ajax({
+			url:"cgi-bin/rtm.cgi",
+			success:function(result){
+				arr = result.split('#');
+				temp = arr[0];
+				humid = arr[1];
+				illu = arr[2];
+				date = arr[3];
+				$('.rt_data').text("实时信息：温度:" + temp + ",湿度:" + humid + ",光照:" + illu + "日期:" + date);
+			}
+			});
+			
+			$.ajax({
+				url:"cgi-bin/maxmin.cgi",
+				success:function(result){
+					arr = result.split('#');
+					temmax = arr[0];
+					$('#temmax').val(temmax);
+					temmin = arr[1];
+					illumax = arr[2];
+					illumin = arr[3];
+					humax = arr[4];
+					humin = arr[5];
+					
+				
+				}
+			});
+		});
+		
+		function getRTM()
+		{
+			$.ajax({
+			url:"cgi-bin/rtm.cgi",
+			success:function(result){
+				arr = result.split('#');
+				temp = arr[0];
+				humid = arr[1];
+				illu = arr[2];
+				date = arr[3];
+				$('.rt_data').text("实时信息：温度:" + temp + ",湿度:" + humid + ",光照:" + illu + "日期:" + date);
+			}
+			});
+		}
+		
+		setInterval('getRTM()',1000);
+		
+		function led_modi()
+		{
+			var ledflag;
+			if($("#ledoff").is(':checked'))
+			{
+				ledflag = 1;
+			}
+			else 
+			{
+				ledflag = 0;
+			}
+			
+			$.ajax({
+				url:"cgi-bin/led.cgi",
+				data:{
+					"type":ledflag
+				},
+				success:function(result){
+					if(ledflag)
+					{
+						alert('select ledoff');
+					}
+					else
+					{
+						alert('select ledon');
+					}
+				},
+				
+			});
+			
+		}
+	function pwm_modi()
+		{
+			var pwmflag;
+			if($("#pwmoff").is(':checked'))
+			{
+				pwmflag = 1;
+			}
+			else 
+			{
+				pwmflag = 0;
+			}
+			
+			$.ajax({
+				url:"cgi-bin/led.cgi",
+				data:{
+					"type":pwmflag
+				},
+				success:function(result){
+					if(pwmflag)
+					{
+						alert('select pwmoff');
+					}
+					else
+					{
+						alert('select pwmon');
+					}
+				},
+				
+			});
+			
+		}
+		function fan_modi()
+		{
+			var fanflag;
+			if($("#fan0").is(':checked'))
+			{
+				fanflag = 0;
+			}
+			else if($("#fan1").is(':checked'))
+			{
+				fanflag = 1;
+			}
+			else if($("#fan2").is(':checked'))
+			{
+				fanflag = 2;
+			}
+			else if($("#fan3").is(':checked'))
+			{
+				fanflag = 3;
+			}
+			$.ajax({
+				url:"cgi-bin/fan.cgi",
+				data:{
+					"type":fanflag
+				},
+				success:function(result){
+					if(ledflag)
+					{
+						alert('select ledoff');
+					}
+					else
+					{
+						alert('select ledon');
+					}
+				},
+				
+			});
+			
+		}
+	</script>
+
+	</head>
+<body style="background:url('img/i_bg.jpg');">
+	<marquee><span class="rt_data"></span></marquee>
+	<div class="container">
+		<div class="panel panel-default" style="margin-top:100px">
+	<div class="panel-heading">
+		<h3 class="panel-title">历史数据</h3>
+	</div>
+
+	<table class="table">
+		<th>温度</th><th>湿度</th><th>光照</th><th>采集时间</th>
+		<tbody>
+			<td colspan="4">目前没有任何数据！</td>
+		</tbody>
+	</table>
+</div>
+<!-- control / max/min -->
+<div class="panel panel-default col-sm-6">
+	<div class="panel-heading">M0控制部分</div>
+		<ul class="list-group">
+		<li class="list-group-item"><div class="form-inline"><label class="radio-inline">
+        <input type="radio" name="ledoption" id="ledon" value="0" checked> LED ON
+    </label>
+    <label class="radio-inline">
+        <input type="radio" name="ledoption" id="ledoff"  value="1"> LED OFF
+    </label><button class="btn btn-warning" onclick="led_modi()" style="margin-left:5px">修改</button></div></li>
+		<li class="list-group-item"><div class="form-inline"><label class="radio-inline">
+        <input type="radio" name="optionsRadiosinline" id="fan1" value="option1" checked>fan level 1
+    </label>
+    <label class="radio-inline">
+        <input type="radio" name="optionsRadiosinline" id="fan2"  value="option2">fan level 2
+    </label><label class="radio-inline">
+        <input type="radio" name="optionsRadiosinline" id="fan3"  value="option2">fan level 3
+    </label><label class="radio-inline">
+        <input type="radio" name="optionsRadiosinline" id="fan0"  value="option2">fan level 0
+    </label><button class="btn btn-warning" onclick="fan_modi()" style="margin-left:5px">修改</button></div></li>
+		<li class="list-group-item"><div class="form-inline"><label class="radio-inline">
+        <input type="radio" name="optionsRadiosinline" id="pwmon" value="0" >pwm on
+    </label>
+    <label class="radio-inline">
+        <input type="radio" name="optionsRadiosinline" id="pwmoff"  value="1" checked>pwm off
+    </label><button class="btn btn-warning" style="margin-left:5px" onclick="pwm_modi()">修改</button></div></li>
+	</ul>
+</div>
+<div class="panel panel-default col-sm-6">
+	<div class="panel-heading">最大/最小值 调节</div>
+		<table class="table">
+		<th>名称</th><th>最大</th><th>最小</th>
+		<tr>
+		<td>温度</td>
+		<td><input type='text' size="5" class="form-control" style="width:50%" /></td>
+		<td><input type='text' class="form-control" style="width:50%" /></td>
+		</tr>
+		<tr>
+		<td>湿度</td>
+		<td><input type='text' class="form-control" style="width:50%" /></td>
+		<td><input type='text' class="form-control" style="width:50%" /></td>
+		</tr>
+		<tr>
+		<td>亮度</td>
+		<td><input type='text' class="form-control" style="width:50%" /></td>
+		<td><input type='text' class="form-control" style="width:50%" /></td>
+		</tr>
+		<tr>
+		<td colspan=3 align="right"><button class="btn-info">修改</button></td>
+		</tr>
+	</table>
+</div>
+	</div>
+</body>
+</html>

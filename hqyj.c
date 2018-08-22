@@ -21,7 +21,7 @@ void * m0_func(void * args)
 	float humidity = 0;
 	char time_str[20];
 	msgtype msg;
-	msg.type = 4;
+	msg.msgc.type = 4;
 	msg.msgtype = 1001;
 	int t_flag = 0;
 	int i_flag = 0;
@@ -32,12 +32,16 @@ void * m0_func(void * args)
 
 
 		//read 
+		/*
 		temperature = read_temperature();
 		illusion = read_illusion();
 		humidity = read_humidity();
-
+		*/
+		temperature = 20;
+		illusion = 20;
+		humidity = 20;
 		getTime(time_str);
-		sprintf(msg.msgcont,"%f#%f#%f#%s#",temperature,illusion,humidity,time_str);
+		sprintf(msg.msgc.msgcont,"%f#%f#%f#%s#",temperature,illusion,humidity,time_str);
 		//normal insert into link if link size > 10 insert into sqlite and shm 
 		if(insertLink(&envHeader,msg) > 9)
 		{
@@ -93,10 +97,10 @@ void * client_func(void * args)
 					zigbee_set(msg);
 					break;
 				case 1001:
-					env_set(db,msg);
+					env_set(db,msg,msg_recv);
 					break;
 				case 1004:
-					env_set(db,msg);
+					env_set(db,msg,msg_recv);
 					break; 
 
 
@@ -104,7 +108,6 @@ void * client_func(void * args)
 
 		}
 		printf("client...\n");
-		sleep(1);
 	}
 	return NULL;
 }
@@ -202,7 +205,6 @@ void * pwm_func(void * args)
 
 void * fan_func(void * args)
 {
-	printf("this is fan\n");
 	return NULL; 
 }
 

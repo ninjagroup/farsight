@@ -49,14 +49,14 @@ void close_m0_led()
 void zigbee_set(msgtype msg)
 {
 	//msgcont level
-	if(msg.type == 1)
+	if(msg.msgc.type == 1)
 	{
 		// 0 close 1-3 level 
-		setM0Fan(msg.msgcont[0] - 48);
-	}else if(msg.type == 2)
+		setM0Fan(msg.msgc.msgcont[0] - 48);
+	}else if(msg.msgc.type == 2)
 	{
 		//cont 0 close 1 open 
-		if((msg.msgcont[0] - 48) == 0)
+		if((msg.msgc.msgcont[0] - 48) == 0)
 		{
 			close_m0_pwm();
 		}
@@ -64,10 +64,10 @@ void zigbee_set(msgtype msg)
 		{
 			open_m0_pwm();
 		}
-	}else if(msg.type == 3)
+	}else if(msg.msgc.type == 3)
 	{
 		//0 close 1 open 
-		if((msg.msgcont[0] - 48) == 0)
+		if((msg.msgc.msgcont[0] - 48) == 0)
 		{
 			close_m0_led();
 		}

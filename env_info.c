@@ -77,16 +77,68 @@ env_info_limit env_limit_select(sqlite3 *db)
 //	sqlite3_close(db);
 	return env_limit;
 }
-
-void env_select(sqlite3 *db)
+void env_select(sqlite3 *db,msgtype msg,int recv_key)
 {
-	char sqlstr[128],*errmsg;
+	char *errmsg;
+	char sql[150];
+	int nRow,nColumn;
+	int result;
+	char **dbResult; 
+	msgtype msg_snd;
+	int i,j;
+	int index;
+	int pid = atoi(msg.msgc.msgcont);
+	msg_snd.msgtype = pid;
 
-	strcpy(sqlstr,"select * from env limit 15");
-	
-	//msgcont pid 
-	//msg queue msgtype pid cont temperature#humid#illusion 
-	
+
+	//make ftok l
+	int msgid = msgget(recv_key,0666);
+	strcpy(sql,"select * from env");
+	result = sqlite3_get_table( db, sql, &dbResult, &nRow, &nColumn, &errmsg );
+	index = nColumn;
+	msg_snd.msgc.type = 1;	
+	struct msqid_ds md;
+
+	if(result == SQLITE_OK)
+	{
+		for(i = 0;i < nRow;i++)
+		{
+			memset(msg_snd.msgc.msgcont,'\0',strlen(msg_snd.msgc.msgcont));
+			sprintf(msg_snd.msgc.msgcont,"%s<tr>",msg_snd.msgc.msgcont);
+			for(j = 0;j < nColumn;j++)
+			{
+				sprintf(msg_snd.msgc.msgcont,"<td>%s",msg_snd.msgc.msgcont);
+				if(dbResult[index] == NULL)
+				{
+					strcat(msg_snd.msgc.msgcont,"0");
+
+				}else
+				{
+					strcat(msg_snd.msgc.msgcont,dbResult[index]);
+				}
+					sprintf(msg_snd.msgc.msgcont,"%s</td>",msg_snd.msgc.msgcont);
+
+				index++;
+			}
+		
+			sprintf(msg_snd.msgc.msgcont,"%s</tr>",msg_snd.msgc.msgcont);
+			msgctl(msgid,IPC_STAT,&md);
+			if(md.msg_qnum < 50){
+			if(msgsnd(msgid,&msg_snd,sizeof(msgtype),0) < 0)
+			{
+				perror("env select send part error\n");
+			}
+			}
+			else{
+				usleep(100);
+			}
+			memset(msg_snd.msgc.msgcont,'\0',strlen(msg_snd.msgc.msgcont));
+		}
+		strcat(msg_snd.msgc.msgcont,"END");
+		//send end symbol 
+		msgsnd(msgid,&msg_snd,sizeof(msgtype),0);
+	}
+	sqlite3_free_table(dbResult);
 }
 
 
@@ -108,10 +160,6 @@ bool env_insert(sqlite3 *db,env_info envInfo)
 		printf("%s\n", errmsg);
 		return false;
 	}
-	else 
-	{
-		printf("insert into env\n");
-	}
 //	sqlite3_close(db);
 	return true;
 }
@@ -126,7 +174,7 @@ bool env_insert_msg(sqlite3 *db,msgtype msg)
 	char sql[100];
 	char * errmsg;
 
-	sscanf(msg.msgcont,"%f#%f#%f#%s",&temperature,&illusion,&humidity,insertdate);
+	sscanf(msg.msgc.msgcont,"%f#%f#%f#%s",&temperature,&illusion,&humidity,insertdate);
 	sprintf(sql,"insert into env(temperature,illusion,humidity,insertdate) values(%f,%f,%f,%s)",\
 			temperature,illusion,humidity,insertdate);
 
@@ -167,7 +215,7 @@ bool env_limit_insert(sqlite3 *db,msgtype msg)
 		return false;
 	}
 	//msgcont temMax#temMin#huMax#huMin#illMax#illuMin 
-	sscanf(msg.msgcont,"%f#%f#%f#%f#%f#%f",&temMax,&temMin,&huMax,\
+	sscanf(msg.msgc.msgcont,"%f#%f#%f#%f#%f#%f",&temMax,&temMin,&huMax,\
 			&huMin,&illMax,&illMin);
 	sprintf(sql,"insert into envlimit(temperaturMAX,temperatureMIN,\
 		humidityMAX,humidityMIN,illusionMAX,illusionMIN) values(\
@@ -193,22 +241,25 @@ void env_limit_select_msg(sqlite3 *db)
 	
 
 }
-void env_set(sqlite3 *db,msgtype msg)
+void env_set(sqlite3 *db,msgtype msg,int msg_recv)
 {
 	if(msg.msgtype == 1001)
 	{
-		if(msg.type == 2)
+		if(msg.msgc.type == 2)
 		{
 			env_limit_select_msg(db);
 		}
 	}else if(msg.msgtype == 1004)
 	{
-		if(msg.type == 1)
+		printf("here?\n");
+		printf("%d,%s\n",msg.msgc.type,msg.msgc.msgcont);
+		if(msg.msgc.type == 1)
 		{
 			env_insert_msg(db,msg);
-		}else if(msg.type == 2)
+		}else if(msg.msgc.type == 2)
 		{
-			env_select(db);
+			printf("is me?\n");
+			env_select(db,msg,msg_recv);
 		}
 	}
 }

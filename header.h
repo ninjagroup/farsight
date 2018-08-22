@@ -10,6 +10,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/msg.h>
+#include <sys/sem.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <time.h>
@@ -20,7 +21,7 @@
 
 
 
-#define MSGSIZE 100
+#define MSGSIZE 150
 typedef enum{
 	false = 0,
 	true
@@ -38,10 +39,13 @@ typedef enum{
  *
  *
  */
-typedef struct msgtype{
-	char type; 
-	int msgtype;
+typedef struct msgc{
+	char type;
 	char msgcont[MSGSIZE];
+}msgc;
+typedef struct msgtype{
+	long msgtype;
+	msgc msgc;
 }msgtype;
 
 

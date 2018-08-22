@@ -15,7 +15,8 @@ int insertLink(envLink *H,msgtype msg)
 {
 	env_info envInfo; 
 	//msg temperature, illusion,humidity,time_str 
-	sscanf(msg.msgcont,"%f#%f#%f#%[^#]#",&(envInfo.temperature),&(envInfo.illusion)\
+	sscanf(msg.msgc.msgcont,
+			"%f#%f#%f#%[^#]#",&(envInfo.temperature),&(envInfo.illusion)\
 			,&(envInfo.humidity),envInfo.insert_time);
 	envInfo.x = 0;
 	envInfo.y = 0;

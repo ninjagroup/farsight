@@ -9,17 +9,17 @@ int main(int argc, const char *argv[])
 	{
 		if(errno == EEXIST)
 		{
-			msgid_send = msgget(msg_send,IPC_CREAT);
+			msgid_send = msgget(msg_send,IPC_CREAT|0777);
 		}else{
 			perror("fail to msgget_send!");
 			return -1;
 		}
 	}
-	if((msgid_recv = msgget(msg_recv,IPC_CREAT|IPC_EXCL|0777) < 0))
+	if((msgid_recv = msgget(msg_recv,IPC_CREAT|IPC_EXCL|0666) < 0))
 	{
 		if(errno == EEXIST)
 		{
-			msgid_recv = msgget(msg_recv,IPC_CREAT);
+			msgid_recv = msgget(msg_recv,IPC_CREAT|0666);
 		}else{ 
 			perror("fail to msgget_recv!");
 			return -1;
@@ -30,7 +30,7 @@ int main(int argc, const char *argv[])
 	{
 		if(errno = EEXIST)
 		{
-			shmid = shmget(shmkey,sizeof(msgtype) * 10,IPC_CREAT);
+			shmid = shmget(shmkey,sizeof(msgtype) * 10,IPC_CREAT|0777);
 		}else{
 			perror("fail to shmget!");
 			return -1;
